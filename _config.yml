@@ -4,7 +4,8 @@ organization: OSDG
 description: A website that showcases interesting projects, using Angular JS.
 baseurl: ""  # the subpath of your site, e.g. /blog
 url: ""  # the base hostname & protocol for your site
-logo: ""
+logo: "resources/images/osdg.png"
+logo-link: http://osdg.iiit.ac.in/
 
 plugins:
   - jekyll-netlify
