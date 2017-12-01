@@ -1,5 +1,4 @@
 ---
 question: "I have an own project idea! (Mentors and students!)"
 ---
-Superb! We recommend you submit your idea to [our projects list](https://github.com/coala/projects/blob/master/data/projects.js)
-as a pull request.
+Superb! We recommend you submit your idea to us on [facebook](https://fb.com/groups/osdg.iiit.h).

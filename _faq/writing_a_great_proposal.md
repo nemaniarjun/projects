@@ -1,5 +1,5 @@
 ---
-question: "How do I work out a great proposal?"
+question: "How do I work out a great proposal for GSoC?"
 ---
 Please design your project in a way that you have **multiple
 checkpoints**. We'd like you to specify at least three milestones with
@@ -15,7 +15,7 @@ with us so we can coordinate and - in the worst case - prohibit waste of time
 from your side. At all cost make sure you find something that interests you.
 We want this to be a fun and educating experience for you!
 
-Use the"draft" feature on the GSoC system, submit your draft early, get a
+Use the "draft" feature on the GSoC system, submit your draft early, get a
 lot of helpful feedback from us!
 
 
