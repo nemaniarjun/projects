@@ -10,6 +10,7 @@ plugins:
   - jekyll-netlify
 
 # Build settings
+destination: ./docs
 exclude: [vendor]
 markdown: kramdown
 collections:

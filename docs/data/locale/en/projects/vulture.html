@@ -1,0 +1,243 @@
+<h4 id="overview">Overview</h4>
+
+<p>The motivation, here, is to extend the functionality of vulture as a library,
+and to pass on all metadata through the API and then to harness this utility in
+VultureBear for auto removing dead code, which would greatly optimise the bear.
+The second part of this project focuses on offering the source range of the
+dead code which would make auto-removal much easier. As of now, vulture only
+supplies the beginning of the dead code. Also, it proposes to enhance vulture
+in order to detect unreachable code(like <code class="highlighter-rouge">if False</code>, <code class="highlighter-rouge">if True else</code>, any code
+written after return statements, etc). - this shall helpthe user in trimming
+down their codebase without affecting usability. Also, the third part would be
+to implement a confidence value for every result, this shall be helpful when
+tackling false positives.</p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/15556382/26275557/580cae2c-3d81-11e7-89ed-ac1ccbf9dc26.png" alt="coala-VultureBear-Integration-picture" /></p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Modify vulture, such as to extend its core functionality as a library.</li>
+  <li>Refactor VultureBear accordingly for ensuring optimal performance.</li>
+  <li>Implement a method to acquire the source range of dead code and make suitable
+changes in the API and Bear.</li>
+  <li>Detect the instances of unreachable code, like <code class="highlighter-rouge">if False</code> statements</li>
+  <li>Analyse and implement a confidence value for results.</li>
+</ul>
+
+<h4 id="specifications">Specifications</h4>
+
+<h5 id="1-realise-vultures-api-in-vulturebear">1.) Realise vulture’s API in VultureBear</h5>
+
+<ul>
+  <li>
+    <p>Extending vulture’s API: This would allow the user to find all the unused
+code through a single abstract layer: <code class="highlighter-rouge">get_unused_code</code>. This can be easily
+implemented, given the already existing Vulture.scan(), Vulture.report(),
+Vulture.unused_funcs(), etc. with minimal changes in vulture’s code base.</p>
+  </li>
+  <li>
+    <p>Enhance VultureBear</p>
+
+    <ul>
+      <li>Refactor VultureBear to directly fetch results through get_unused_code
+(API), thus making it more efficient- we would have memory files passing
+(An extra layer of parsing would then be removed)</li>
+      <li>Further enhancements in vulture (detect unreachable code and reporting
+ranges of dead code)  would influence the API, which would also need
+refactoring of the Bear.</li>
+    </ul>
+  </li>
+</ul>
+
+<h5 id="2-improving-default-whitelist">2.) Improving default whitelist</h5>
+
+<p>The first step here would be to make the whitelist default. The important thing
+would be to identify possible cases which might cause vulture to report a false
+positive. This can be achieved through extensive testing with major projects
+(trending python projects on github would cater to our need for the purpose).
+This approach would serve us many benefits:</p>
+
+<ul>
+  <li>We can identify instances of what should ideally be in our whitelist file
+as we may find any lesser known constructs.</li>
+  <li>We can test vulture for any unreported bugs.</li>
+  <li>We can find many projects which use/might want to use vulture - they may
+further collaborate with us in making the whitelists together.</li>
+  <li>We can also make whitelists for popular python frameworks like Django, etc.</li>
+</ul>
+
+<h5 id="3-acquiring-source-range-and-implementing-auto-removal">3.) Acquiring source range and implementing auto-removal</h5>
+
+<p>Analyse and discuss with the community the utilities of ast or enhanced pyflake
+ast for what would better cater to our problem and would offer simplicity for
+source-range acquisition and arrive at a concrete conclusion. Also, there was
+another proposal by <a href="https://bitbucket.org/m0hawk">@m0hawk</a> to get everything
+until the next node starts. Dialogue here - <a href="https://github.com/jendrikseipp/vulture/issues/25">#25</a></p>
+
+<p>Also, if able to fetch the source range successfully, implement the pathway
+through which  the metadata flows in and out of API, this would not require
+much work because  we can easily change item.lineno (int) to item.dead_range
+(tuple of ints) and can parse them over in the VultureBear.</p>
+
+<h5 id="4-detecting-unreachable-code">4.) Detecting unreachable code</h5>
+
+<p>We would first need to identify cases where code cannot be reached. Some of the
+common ones are:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">If False</code></li>
+  <li><code class="highlighter-rouge">If True; else</code></li>
+  <li>Any code after <code class="highlighter-rouge">return</code> statement in the block containing return itself.</li>
+  <li><code class="highlighter-rouge">raise</code> statement  in <code class="highlighter-rouge">try</code> block.</li>
+</ul>
+
+<p>Similar constructs would have to be looked onto. The crude form would be:</p>
+
+<ul>
+  <li>Analyse the ast’s</li>
+  <li>Look for the if nodes</li>
+  <li>Check the boolean affiliated to it, tracking previous arguments.</li>
+</ul>
+
+<h5 id="5-implementing-a-confidence-value-for-results">5.) Implementing a confidence value for results</h5>
+
+<p>We would need to analyse every construct individually on a case by case basis.
+For example, we already know that import statements can be predicted with 100%
+surety (except for * imports, where it would be 0%), but functions often have
+false-positives.</p>
+
+<p>The confidence value will be alike the ones given below: (The finer grained
+distinctions will need further discussion)</p>
+
+<ul>
+  <li><code class="highlighter-rouge">import</code> –&gt;  <code class="highlighter-rouge">100%</code></li>
+  <li><code class="highlighter-rouge">from foo import *</code> –&gt; <code class="highlighter-rouge">0%</code></li>
+  <li><code class="highlighter-rouge">variable</code> –&gt; <code class="highlighter-rouge">&lt;100%</code></li>
+  <li><code class="highlighter-rouge">function</code> –&gt; <code class="highlighter-rouge">&lt;100%</code></li>
+  <li><code class="highlighter-rouge">class</code> –&gt; <code class="highlighter-rouge">&lt;100%</code></li>
+  <li><code class="highlighter-rouge">if False</code> –&gt; <code class="highlighter-rouge">100%</code></li>
+</ul>
+
+<p>References:</p>
+
+<ul>
+  <li><a href="https://github.com/jendrikseipp/vulture">vulture</a></li>
+  <li><a href="https://docs.google.com/document/d/1gzRH-rdJsiAD-TOEB0O4OqtcnTp0zotcNl6agAuXGHw/edit?usp=sharing">Project Proposal</a></li>
+</ul>
+
+<h4 id="milestones">Milestones</h4>
+
+<h5 id="pre---community-bonding-period-up-till--may-4">Pre - Community Bonding Period (Up Till  May 4)</h5>
+
+<ul>
+  <li>Initial investigation and discussion on what features to be added to API, and
+start implementing them on the go.</li>
+  <li>Continue discussion with the community on ast and enhanced pyflakes ast -
+What are the underlying differences, and what can be possible implementations
+for source range acquisition.</li>
+  <li>Diagnose possible cases which would render the code unreachable.</li>
+  <li>Inculcate a habit of downloading the trending project of the day, running
+vulture on it, analyzing the results and adding anything suitable to
+whitelist file. This would help us in maintaining a rich whitelist file.</li>
+  <li>Prioritize all the goals and targets</li>
+</ul>
+
+<h5 id="community-bonding-may-5---30">Community Bonding (May 5 - 30)</h5>
+
+<ul>
+  <li>Finalize what should be implemented for source range acquisition on the basis
+of discussions during pre - community bonding period.</li>
+</ul>
+
+<h5 id="coding-phase-1">Coding Phase 1</h5>
+
+<h6 id="week-1--2-may-31---june-13">Week 1 &amp; 2 (May 31 - June 13)</h6>
+
+<ul>
+  <li>Implement API - At this point, we would have a fully functioning API, and we
+would be ready to incorporate these changes into the VultureBear.</li>
+  <li>Refactor VultureBear to incorporate API - This would be relatively easy as
+the API would have had until now respected it’s usage in the VultureBear.</li>
+</ul>
+
+<h6 id="week-3-june-14---20">Week 3 (June 14 - 20)</h6>
+
+<ul>
+  <li>Realize VultureBear completely - At this point, it should be able to execute
+vulture, parse output, produce the patch file for removing the dead code what
+so ever found.</li>
+  <li>Review the tests written so far and add relevant test cases.</li>
+  <li>Document Bear</li>
+  <li>API documentation including, but not limited to possible use cases, example
+code snippets</li>
+  <li>See that code is completely documented in place</li>
+  <li>Buffer time to finish pending work.</li>
+</ul>
+
+<h6 id="week-4-june-20---26">Week 4 (June 20 - 26)</h6>
+
+<ul>
+  <li>Develop an analysis report on what all constructs can we detect with complete
+surety,  partial surety and the ones we cannot detect for the sake of
+implementing a confidence value with results. (A crude version is here in
+this thread).</li>
+  <li>Discuss on the levels of certainty we would need to have (perhaps four for
+highly accurate (100%), accurate (&gt;80%), medium (70 - 80%) and can’t say)</li>
+</ul>
+
+<h5 id="coding-phase-2">Coding Phase 2</h5>
+
+<h6 id="week-5-june-27---july-4">Week 5 (June 27 - July 4)</h6>
+
+<ul>
+  <li>Create whitelist files for popular Python frameworks like Django</li>
+  <li>Configure vulture in order to ensure that whitelist is taken into account
+by default.</li>
+  <li>Updating docs and writing tests.</li>
+</ul>
+
+<h6 id="week-6-july-4---15">Week 6 (July 4 - 15)</h6>
+
+<ul>
+  <li>Adapt to the strategy worked during community bonding period for obtaining
+source range.</li>
+</ul>
+
+<h6 id="week-7--8-july-15---29">Week 7 &amp; 8 (July 15 - 29)</h6>
+
+<ul>
+  <li>Diagnose the instances of unreachable code, our concern here would be to
+identify all such cases which would render the code unreachable, like the
+if False; if True: else; code after return statements, etc. - Adding this
+to the dead code classes, under a new category: get_unreachable</li>
+</ul>
+
+<h5 id="coding-phase-3">Coding Phase 3</h5>
+
+<h6 id="week-9-august-1---7">Week 9 (August 1 - 7)</h6>
+
+<ul>
+  <li>Integrate these results with the VultureBear, which consists of:
+    <ul>
+      <li>Transmitting source range, and unreachable code instances through API</li>
+      <li>Yielding the results of Bear in the new format.</li>
+    </ul>
+  </li>
+</ul>
+
+<h6 id="week-11-august-8---17">Week 11 (August 8 - 17)</h6>
+
+<ul>
+  <li>Adding documentation for all new changes incorporated in the API, Bear and
+vulture itself.</li>
+  <li>Code Review</li>
+  <li>Taking feedback and making any improvements proposed.</li>
+</ul>
+
+<h6 id="week-12-august-17---24">Week 12 (August 17 - 24)</h6>
+
+<ul>
+  <li>Buffer week to complete any pending work, evaluate and review tasks
+completed, review documentation and test cases.</li>
+</ul>
